@@ -1,0 +1,71 @@
+model:
+  name: "instructlab/granite-7b-lab"
+  model_type: "hf"
+  
+evaluation:
+  framework: "olmes"
+  
+  tasks:
+    - "arc_challenge::olmes"
+    - "hellaswag::olmes" 
+    - "piqa::olmes"
+  
+  limit: 100
+  
+  baseline_results_dir: "./results/baseline"
+  post_training_results_dir: "./results/post_training"
+  
+  post_training:
+    model_selection: "auto"
+    model_path_override: null
+    preferred_format: "hf_format"
+  
+  model_args:
+    trust_remote_code: true
+    torch_dtype: "auto"
+    device_map: "auto"
+  
+  gpu:
+    auto_detect: true
+    max_gpus: 8
+
+training:
+  framework: "instructlab"
+  
+  dataset:
+    name: "allenai/tulu-3-sft-mixture"  
+    subset_size: 1000
+    split: "train"
+    data_path: null 
+
+  model_path: "instructlab/granite-7b-lab"
+  
+  parameters:
+    num_epochs: 2
+    learning_rate: 5e-5
+    max_seq_len: 512
+    max_batch_len: 4096  
+    effective_batch_size: 32  
+    save_samples: 250
+    warmup_steps: 50
+    random_seed: 42
+    
+  distributed:
+    nnodes: 1 
+    nproc_per_node: 8  
+    node_rank: 0  
+    rdzv_id: 123  
+    rdzv_endpoint: "127.0.0.1:12345"  
+    
+  output_dir: "./models/trained"
+  checkpoints_dir: "./checkpoints"
+  data_output_dir: "./data/processed"
+
+experiment:
+  name: "tinyllama_tulu3_eval"
+  description: "TinyLlama fine-tuned on Tulu-3 subset for baseline comparison"
+  seed: 42
+  
+logging:
+  level: "INFO"
+  log_file: "./logs/experiment.log" 
